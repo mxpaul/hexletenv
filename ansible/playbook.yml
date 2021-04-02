@@ -1,0 +1,74 @@
+---
+- hosts: all
+  vars:
+    nodejs_vbersion: 14.6.0
+    dotfile_src_dir: ../dotfiles
+    dotfiles_files:
+      - .vimrc
+      - .bashrc
+      - .tmux.conf
+      - .gitconfig
+    install_rpm:
+      - vim
+      - tree
+      - git
+      - gnupg2
+    asdf_repo_url: https://github.com/asdf-vm/asdf.git
+    asdf_branch: v0.8.0
+  tasks:
+    - name: Use google dns
+      copy: content="nameserver 8.8.8.8" dest=/etc/resolv.conf
+      become: true
+    - name: Install packages
+      yum:
+        name: "{{ install_rpm }}"
+        state: present
+        update_cache: false
+      #with_items: "{{ install_rpm }}"
+      become: true
+      when: ansible_os_family == 'RedHat'
+
+    - name: Copy dotfiles
+      template:
+        src: "{{ dotfile_src_dir }}/{{ item }}"
+        dest: "~/{{ item }}"
+        mode: 0600
+      with_items: "{{ dotfiles_files }}"
+      become: false
+    #############################################################################################
+    # Install asdf package manager
+    #############################################################################################
+    # TODO: move this into own asdf play
+    - name: Clone asdf
+      git:
+        repo: "{{ asdf_repo_url }}"
+        dest: "~/.asdf"
+        version: "{{ asdf_branch }}"
+        accept_hostkey: false
+      become: false
+    - name: Check nodejs plugin installed
+      shell: ~/.asdf/bin/asdf plugin list 2>/dev/null | grep nodejs -c &>/dev/null
+      register: checkNodejsPlugin
+      failed_when: false
+    - name: Add nodejs plugin
+      shell: ~/.asdf/bin/asdf plugin add nodejs
+      when: checkNodejsPlugin.rc != 0
+    - name: Create gnupg config dir
+      file: 
+        state: directory
+        dest: ~/.gnupg
+        mode: 0755
+    - name: Configure dirmngr
+      copy: content="standard-resolver" dest=~/.gnupg/dirmngr.conf
+    - name: Install nodejs
+      shell: "~/.asdf/bin/asdf install nodejs {{ nodejs_vbersion }}"
+      register: nodejsInstallCmd
+      failed_when: nodejsInstallCmd.rc != 0
+    - name: Check nodejs current version
+      shell: ~/.asdf/bin/asdf current 2>&1 | grep nodejs | grep 'No version set' -c &>/dev/null
+      register: checkNodejsCurrent
+      failed_when: false
+    - name: Set nodejs global version
+      shell: "~/.asdf/bin/asdf global nodejs {{ nodejs_vbersion }}"
+      when: checkNodejsCurrent.rc == 0
+
