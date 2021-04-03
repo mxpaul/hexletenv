@@ -13,6 +13,8 @@
       - tree
       - git
       - gnupg2
+      - tmux
+      - make
     asdf_repo_url: https://github.com/asdf-vm/asdf.git
     asdf_branch: v0.8.0
   tasks:
@@ -71,4 +73,13 @@
     - name: Set nodejs global version
       shell: "~/.asdf/bin/asdf global nodejs {{ nodejs_vbersion }}"
       when: checkNodejsCurrent.rc == 0
+    #############################################################################################
+    # Install asdf package manager
+    #############################################################################################
+    - name: Download docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.28.6/docker-compose-Linux-x86_64
+        dest: /usr/bin/docker-compose
+        mode: '0755'
+      become: true
 
