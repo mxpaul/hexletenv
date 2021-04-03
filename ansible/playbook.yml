@@ -15,6 +15,7 @@
       - gnupg2
       - tmux
       - make
+      - net-tools
     asdf_repo_url: https://github.com/asdf-vm/asdf.git
     asdf_branch: v0.8.0
   tasks:
