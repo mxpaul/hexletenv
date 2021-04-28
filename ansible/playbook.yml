@@ -83,4 +83,8 @@
         dest: /usr/bin/docker-compose
         mode: '0755'
       become: true
-
+  roles:
+    - role: gantsign.golang
+      vars:
+        golang_version: '1.16.3'
+      become: yes

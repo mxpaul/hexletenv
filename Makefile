@@ -2,7 +2,7 @@ ANSIBLE_ENVIRONMENT = PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_K
 	ANSIBLE_SSH_ARGS="$(ANSIBLE_SSH_ARGS)"
 ANSIBLE_SSH_ARGS = -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o ControlMaster=auto \
 	-o ControlPersist=60s
-ANSIBLE_PLAYBOOK_FLAGS = --connection=ssh --timeout=30 --limit="default"
+override ANSIBLE_PLAYBOOK_FLAGS += --connection=ssh --timeout=30 --limit="default"
 ANSIBLE_VAGRANT_INVENTORY = .vagrant/provisioners/ansible/inventory
 
 all:
